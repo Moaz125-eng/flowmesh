@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: flowmesh-postgres
+    environment:
+      POSTGRES_USER: flowmesh
+      POSTGRES_PASSWORD: flowmesh
+      POSTGRES_DB: flowmesh
+    ports:
+      - "5432:5432"
+    volumes:
+      - flowmesh-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flowmesh"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: flowmesh-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - flowmesh-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  flowmesh-pg-data:
+  flowmesh-redis-data:
