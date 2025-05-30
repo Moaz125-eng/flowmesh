@@ -2,8 +2,10 @@ import { buildServer } from "./server.js";
 import { config } from "./config.js";
 import { logger } from "./utils/logger.js";
 import { closePool } from "./db/client.js";
+import { runMigrations } from "./db/migrate.js";
 
 async function main(): Promise<void> {
+  await runMigrations();
   const app = await buildServer();
 
   try {

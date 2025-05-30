@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import { config } from "./config.js";
 import { logger } from "./utils/logger.js";
 import { FlowMeshError } from "./utils/errors.js";
+import { registerWorkflowRoutes } from "./routes/workflows.js";
 
 export async function buildServer(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -19,6 +20,8 @@ export async function buildServer(): Promise<FastifyInstance> {
     version: "0.1.0",
     timestamp: new Date().toISOString(),
   }));
+
+  await registerWorkflowRoutes(app);
 
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof FlowMeshError) {
