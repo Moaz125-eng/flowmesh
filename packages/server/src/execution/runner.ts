@@ -3,6 +3,7 @@ import { evaluateCondition } from "../workflows/conditions.js";
 import { validateDag } from "../workflows/dag.js";
 import { logger } from "../utils/logger.js";
 import { buildConditionScope, type ExecutionContext } from "./context.js";
+import { CancelledError, runWithRetry } from "./retry.js";
 
 export interface NodeExecutor {
   run(opts: {
@@ -56,44 +57,71 @@ export async function runWorkflow(
     }
 
     const node = dag.nodes.get(nodeId)!;
+    const startedAt = Date.now();
     const snap: StepSnapshot = {
       nodeId,
       status: "running",
-      attempts: 1,
-      startedAt: new Date().toISOString(),
+      attempts: 0,
+      startedAt: new Date(startedAt).toISOString(),
     };
     ctx.steps.set(nodeId, snap);
 
     try {
-      const startedAt = Date.now();
-      const output = await executor.run({
-        nodeId,
-        type: node.type,
-        config: node.config,
-        context: ctx,
+      const result = await runWithRetry({
+        policy: node.retry,
+        signal: ctx.signal,
+        timeoutMs: node.timeoutMs,
+        fn: async (attempt) => {
+          ctx.steps.set(nodeId, { ...snap, attempts: attempt });
+          return executor.run({
+            nodeId,
+            type: node.type,
+            config: node.config,
+            context: ctx,
+          });
+        },
+        onAttemptError: (err, attempt, nextDelayMs) => {
+          logger.warn(
+            { err, nodeId, attempt, nextDelayMs, executionId: ctx.executionId },
+            "step attempt failed, retrying",
+          );
+        },
       });
       const finishedAt = Date.now();
-      ctx.outputs.set(nodeId, output);
-      lastOutput = output;
+      ctx.outputs.set(nodeId, result.value);
+      lastOutput = result.value;
       ctx.steps.set(nodeId, {
         ...snap,
         status: "succeeded",
+        attempts: result.attempts,
         finishedAt: new Date(finishedAt).toISOString(),
         durationMs: finishedAt - startedAt,
-        output,
+        output: result.value,
       });
       completed.add(nodeId);
     } catch (err) {
       const error = toErrorPayload(err);
-      logger.warn({ err, nodeId, executionId: ctx.executionId }, "step failed");
+      const cancelled = err instanceof CancelledError;
+      const status = cancelled ? "cancelled" : "failed";
+      const finishedAt = Date.now();
+      logger.warn(
+        { err, nodeId, executionId: ctx.executionId, status },
+        "step terminated",
+      );
+      const prev = ctx.steps.get(nodeId)!;
       ctx.steps.set(nodeId, {
-        ...snap,
-        status: "failed",
-        finishedAt: new Date().toISOString(),
-        durationMs: Date.now() - new Date(snap.startedAt!).getTime(),
+        ...prev,
+        status,
+        finishedAt: new Date(finishedAt).toISOString(),
+        durationMs: finishedAt - startedAt,
         error,
       });
-      return finalize(ctx, "failed", lastOutput, error);
+      return finalize(
+        ctx,
+        cancelled ? "cancelled" : "failed",
+        lastOutput,
+        error,
+      );
     }
   }
 
