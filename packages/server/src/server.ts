@@ -4,6 +4,8 @@ import { config } from "./config.js";
 import { logger } from "./utils/logger.js";
 import { FlowMeshError } from "./utils/errors.js";
 import { registerWorkflowRoutes } from "./routes/workflows.js";
+import { registerWebhookRoutes } from "./triggers/webhook.js";
+import { registerExecutionRoutes } from "./triggers/manual.js";
 
 export async function buildServer(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -22,6 +24,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   }));
 
   await registerWorkflowRoutes(app);
+  await registerExecutionRoutes(app);
+  await registerWebhookRoutes(app);
 
   app.setErrorHandler((err, _req, reply) => {
     if (err instanceof FlowMeshError) {
