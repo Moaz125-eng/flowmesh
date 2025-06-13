@@ -9,6 +9,7 @@ import {
   updateExecutionSteps,
 } from "./repository.js";
 import { runWorkflow, type NodeExecutor } from "./runner.js";
+import { bus } from "../realtime/bus.js";
 
 const activeAborts = new Map<string, AbortController>();
 
@@ -49,15 +50,29 @@ async function runDetached(
     signal: controller.signal,
   });
 
+  bus.emitEvent({
+    type: "execution.started",
+    executionId,
+    startedAt: new Date(ctx.startedAt).toISOString(),
+  });
+
   try {
     const result = await runWorkflow(ctx, opts.executor);
+    const durationMs = Date.now() - ctx.startedAt;
     await finishExecution({
       id: executionId,
       status: result.status,
       output: result.output,
       error: result.error,
       steps: result.steps,
-      durationMs: Date.now() - ctx.startedAt,
+      durationMs,
+    });
+    bus.emitEvent({
+      type: "execution.finished",
+      executionId,
+      status: result.status,
+      finishedAt: new Date().toISOString(),
+      durationMs,
     });
     logger.info(
       { executionId, status: result.status, workflowId: opts.workflow.id },
