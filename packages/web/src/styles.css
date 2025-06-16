@@ -1,0 +1,97 @@
+:root {
+  color-scheme: dark;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: #0e1117;
+  color: #e6edf3;
+}
+
+body { margin: 0; }
+
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+}
+.topbar h1 { margin: 0; font-size: 1.15rem; letter-spacing: 0.04em; }
+.topbar nav a {
+  color: #c9d1d9;
+  margin-left: 1rem;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.topbar nav a:hover { color: #58a6ff; }
+
+.content { padding: 1.5rem; max-width: 1080px; width: 100%; margin: 0 auto; }
+
+.grid { width: 100%; border-collapse: collapse; margin-top: 0.75rem; }
+.grid th, .grid td {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #21262d;
+  font-size: 0.9rem;
+}
+.grid th { color: #8b949e; font-weight: 500; }
+
+.muted { color: #8b949e; font-size: 0.8rem; }
+.error { color: #f85149; }
+.error-block {
+  background: #2d1418;
+  border: 1px solid #f85149;
+  padding: 0.75rem;
+  border-radius: 6px;
+  white-space: pre-wrap;
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: #21262d;
+  cursor: pointer;
+}
+.pill.ok, .pill.status-succeeded { background: #1a3322; color: #3fb950; }
+.pill.off, .pill.status-failed { background: #3a1418; color: #f85149; }
+.pill.status-running { background: #1f2a3d; color: #58a6ff; }
+.pill.status-cancelled { background: #2d2a14; color: #d29922; }
+
+button {
+  background: #238636;
+  color: white;
+  border: 0;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.logs {
+  background: #0a0d12;
+  border: 1px solid #21262d;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  max-height: 360px;
+  overflow: auto;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+}
+.card .big { font-size: 1.4rem; margin-top: 0.25rem; }
