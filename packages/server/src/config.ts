@@ -16,6 +16,8 @@ const ConfigSchema = z.object({
   WORKER_CONCURRENCY: z.coerce.number().int().positive().default(4),
   WEBHOOK_BASE_URL: z.string().default("http://localhost:4000"),
   WEBHOOK_SIGNING_SECRET: z.string().default("change-me-in-production"),
+
+  API_KEYS: z.string().optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

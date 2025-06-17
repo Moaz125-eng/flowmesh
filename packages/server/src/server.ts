@@ -8,6 +8,7 @@ import { registerWebhookRoutes } from "./triggers/webhook.js";
 import { registerExecutionRoutes } from "./triggers/manual.js";
 import { registerRealtimeGateway } from "./realtime/gateway.js";
 import { registerMetricsRoutes } from "./metrics/routes.js";
+import { registerAuth } from "./auth/apiKey.js";
 
 export async function buildServer(): Promise<FastifyInstance> {
   const app = Fastify({
@@ -17,6 +18,7 @@ export async function buildServer(): Promise<FastifyInstance> {
   });
 
   await app.register(cors, { origin: true });
+  await registerAuth(app);
 
   app.get("/health", async () => ({
     status: "ok",
