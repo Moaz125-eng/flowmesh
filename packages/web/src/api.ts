@@ -26,6 +26,18 @@ export const api = {
     request<{ items: WorkflowDefinition[] }>("/api/workflows"),
   getWorkflow: (id: string) =>
     request<WorkflowDefinition>(`/api/workflows/${id}`),
+  createWorkflow: (input: Record<string, unknown>) =>
+    request<WorkflowDefinition>("/api/workflows", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  updateWorkflow: (id: string, input: Record<string, unknown>) =>
+    request<WorkflowDefinition>(`/api/workflows/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(input),
+    }),
+  deleteWorkflow: (id: string) =>
+    request<void>(`/api/workflows/${id}`, { method: "DELETE" }),
   runWorkflow: (id: string, input: Record<string, unknown> = {}) =>
     request<{ accepted: true; jobId: string }>(
       `/api/workflows/${id}/execute`,
