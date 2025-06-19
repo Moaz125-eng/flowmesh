@@ -3,9 +3,14 @@ import { config } from "./config.js";
 import { logger } from "./utils/logger.js";
 import { closePool } from "./db/client.js";
 import { runMigrations } from "./db/migrate.js";
+import { waitFor } from "./utils/wait.js";
 
 async function main(): Promise<void> {
-  await runMigrations();
+  await waitFor(() => runMigrations(), {
+    attempts: 30,
+    intervalMs: 1000,
+    label: "database migrations",
+  });
   const app = await buildServer();
 
   try {
