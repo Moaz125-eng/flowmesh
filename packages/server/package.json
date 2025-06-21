@@ -10,7 +10,9 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed": "tsx src/scripts/seed.ts",
+    "cli": "tsx src/scripts/cli.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
