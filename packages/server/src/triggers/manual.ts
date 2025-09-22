@@ -8,6 +8,7 @@ import {
   listExecutions,
 } from "../execution/repository.js";
 import { ValidationError } from "../utils/errors.js";
+import { replayExecution } from "../execution/replay.js";
 
 const RunBodySchema = z
   .object({
@@ -71,6 +72,18 @@ export async function registerExecutionRoutes(
           .send({ error: "not_active", message: "execution is not running" });
       }
       return { cancelled: true };
+    },
+  );
+
+  app.post<{ Params: { id: string } }>(
+    "/api/executions/:id/replay",
+    async (req, reply) => {
+      const body = RunBodySchema.parse(req.body ?? {});
+      const result = await replayExecution(req.params.id, {
+        triggeredBy: "manual",
+        priority: body.priority,
+      });
+      return reply.code(202).send({ accepted: true, ...result });
     },
   );
 }
