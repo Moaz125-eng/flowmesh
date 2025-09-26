@@ -4,6 +4,7 @@ import { logger } from "./utils/logger.js";
 import { closePool } from "./db/client.js";
 import { runMigrations } from "./db/migrate.js";
 import { waitFor } from "./utils/wait.js";
+import { startRuntime, shutdownApp } from "./runtime/bootstrap.js";
 
 async function main(): Promise<void> {
   await waitFor(() => runMigrations(), {
@@ -11,6 +12,8 @@ async function main(): Promise<void> {
     intervalMs: 1000,
     label: "database migrations",
   });
+
+  const runtime = startRuntime();
   const app = await buildServer();
 
   try {
@@ -27,7 +30,7 @@ async function main(): Promise<void> {
   const shutdown = async (signal: string) => {
     logger.info({ signal }, "shutting down");
     try {
-      await app.close();
+      await shutdownApp(app, runtime);
       await closePool();
       process.exit(0);
     } catch (err) {
