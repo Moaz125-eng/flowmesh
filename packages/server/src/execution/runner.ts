@@ -4,6 +4,8 @@ import { validateDag } from "../workflows/dag.js";
 import { logger } from "../utils/logger.js";
 import { buildConditionScope, type ExecutionContext } from "./context.js";
 import { CancelledError, runWithRetry } from "./retry.js";
+import { bus } from "../realtime/bus.js";
+import { updateExecutionSteps } from "./repository.js";
 
 export interface NodeExecutor {
   run(opts: {
@@ -65,6 +67,13 @@ export async function runWorkflow(
       startedAt: new Date(startedAt).toISOString(),
     };
     ctx.steps.set(nodeId, snap);
+    bus.emitEvent({
+      type: "step.started",
+      executionId: ctx.executionId,
+      nodeId,
+      startedAt: snap.startedAt!,
+      attempt: 0,
+    });
 
     try {
       const result = await runWithRetry({
@@ -73,6 +82,13 @@ export async function runWorkflow(
         timeoutMs: node.timeoutMs,
         fn: async (attempt) => {
           ctx.steps.set(nodeId, { ...snap, attempts: attempt });
+          bus.emitEvent({
+            type: "step.started",
+            executionId: ctx.executionId,
+            nodeId,
+            startedAt: new Date().toISOString(),
+            attempt,
+          });
           return executor.run({
             nodeId,
             type: node.type,
@@ -99,6 +115,8 @@ export async function runWorkflow(
         output: result.value,
       });
       completed.add(nodeId);
+      await emitStepFinished(ctx, nodeId, "succeeded", startedAt, result.attempts);
+      await updateExecutionSteps(ctx.executionId, [...ctx.steps.values()]);
     } catch (err) {
       const error = toErrorPayload(err);
       const cancelled = err instanceof CancelledError;
@@ -116,6 +134,8 @@ export async function runWorkflow(
         durationMs: finishedAt - startedAt,
         error,
       });
+      await emitStepFinished(ctx, nodeId, status, startedAt, prev.attempts);
+      await updateExecutionSteps(ctx.executionId, [...ctx.steps.values()]);
       return finalize(
         ctx,
         cancelled ? "cancelled" : "failed",
@@ -137,6 +157,26 @@ function recordSkip(ctx: ExecutionContext, nodeId: NodeId): void {
     startedAt: now,
     finishedAt: now,
     durationMs: 0,
+  });
+  void updateExecutionSteps(ctx.executionId, [...ctx.steps.values()]);
+}
+
+async function emitStepFinished(
+  ctx: ExecutionContext,
+  nodeId: NodeId,
+  status: StepSnapshot["status"],
+  startedAt: number,
+  attempts: number,
+): Promise<void> {
+  const finishedAt = Date.now();
+  bus.emitEvent({
+    type: "step.finished",
+    executionId: ctx.executionId,
+    nodeId,
+    status,
+    finishedAt: new Date(finishedAt).toISOString(),
+    durationMs: finishedAt - startedAt,
+    attempts,
   });
 }
 

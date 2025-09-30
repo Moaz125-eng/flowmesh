@@ -56,5 +56,10 @@ export const api = {
     request<ExecutionDetail>(`/api/executions/${id}`),
   cancelExecution: (id: string) =>
     request(`/api/executions/${id}/cancel`, { method: "POST" }),
+  replayExecution: (id: string) =>
+    request<{ accepted: true; jobId: string }>(
+      `/api/executions/${id}/replay`,
+      { method: "POST", body: JSON.stringify({}) },
+    ),
   metrics: () => request<WorkflowMetrics>("/api/metrics"),
 };
