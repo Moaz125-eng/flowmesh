@@ -96,6 +96,29 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .card .big { font-size: 1.4rem; margin-top: 0.25rem; }
 
+.progress-wrap {
+  position: relative;
+  height: 10px;
+  background: #21262d;
+  border-radius: 999px;
+  margin: 0.75rem 0 1rem;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #238636, #3fb950);
+  transition: width 0.35s ease;
+}
+.progress-label {
+  display: block;
+  font-size: 0.78rem;
+  color: #8b949e;
+  margin-top: 0.35rem;
+}
+.row-failed td {
+  background: rgba(248, 81, 73, 0.08);
+}
+
 .editor { max-width: 880px; }
 .json-editor {
   width: 100%;
