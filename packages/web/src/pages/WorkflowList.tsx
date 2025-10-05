@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import type { WorkflowDefinition } from "@flowmesh/shared";
 import { api } from "../api.js";
 
@@ -74,6 +75,9 @@ export function WorkflowList(): JSX.Element {
                   </span>
                 </td>
                 <td>
+                  <Link to={`/workflows/${wf.id}/history`}>
+                    <button className="ghost">History</button>
+                  </Link>{" "}
                   <button
                     disabled={running === wf.id || !wf.enabled}
                     onClick={() => void handleRun(wf.id)}
