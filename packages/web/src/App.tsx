@@ -4,6 +4,7 @@ import { ExecutionList } from "./pages/ExecutionList.js";
 import { ExecutionDetailPage } from "./pages/ExecutionDetail.js";
 import { MetricsPanel } from "./pages/Metrics.js";
 import { WorkflowEditor } from "./pages/WorkflowEditor.js";
+import { WorkflowHistoryPage } from "./pages/WorkflowHistory.js";
 
 export function App(): JSX.Element {
   return (
@@ -21,6 +22,7 @@ export function App(): JSX.Element {
         <Routes>
           <Route path="/" element={<WorkflowList />} />
           <Route path="/workflows/new" element={<WorkflowEditor />} />
+          <Route path="/workflows/:id/history" element={<WorkflowHistoryPage />} />
           <Route path="/workflows/:id/edit" element={<WorkflowEditor />} />
           <Route path="/executions" element={<ExecutionList />} />
           <Route path="/executions/:id" element={<ExecutionDetailPage />} />
