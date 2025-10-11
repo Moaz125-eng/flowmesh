@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { collectMetrics, renderPrometheus } from "./collector.js";
 import { listDlq } from "../queue/dlq.js";
+import { retryDlqEntry } from "../queue/dlq-retry.js";
 import { listLogs } from "../realtime/logs.js";
 
 export async function registerMetricsRoutes(
@@ -22,6 +23,18 @@ export async function registerMetricsRoutes(
     });
     return { items, count: items.length };
   });
+
+  app.post<{ Params: { id: string } }>(
+    "/api/dlq/:id/retry",
+    async (req, reply) => {
+      const id = Number(req.params.id);
+      if (!Number.isFinite(id)) {
+        return reply.code(400).send({ error: "invalid_id" });
+      }
+      const result = await retryDlqEntry(id);
+      return reply.code(202).send({ accepted: true, ...result });
+    },
+  );
 
   app.get<{ Params: { id: string } }>(
     "/api/executions/:id/logs",

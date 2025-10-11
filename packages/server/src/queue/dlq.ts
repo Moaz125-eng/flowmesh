@@ -69,3 +69,31 @@ export async function listDlq(opts: {
     createdAt: r.created_at.toISOString(),
   }));
 }
+
+export async function getDlqEntry(id: number) {
+  const result = await query<{
+    id: number;
+    execution_id: string | null;
+    workflow_id: string | null;
+    node_id: string | null;
+    reason: string;
+    payload: Record<string, unknown>;
+    created_at: Date;
+  }>("SELECT * FROM dlq_entries WHERE id = $1", [id]);
+  if (result.rows.length === 0) return null;
+  const r = result.rows[0];
+  return {
+    id: r.id,
+    executionId: r.execution_id,
+    workflowId: r.workflow_id,
+    nodeId: r.node_id,
+    reason: r.reason,
+    payload: r.payload,
+    createdAt: r.created_at.toISOString(),
+  };
+}
+
+export async function removeDlqEntry(id: number): Promise<boolean> {
+  const result = await query("DELETE FROM dlq_entries WHERE id = $1", [id]);
+  return (result.rowCount ?? 0) > 0;
+}
