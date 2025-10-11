@@ -61,5 +61,21 @@ export const api = {
       `/api/executions/${id}/replay`,
       { method: "POST", body: JSON.stringify({}) },
     ),
+  listDlq: () =>
+    request<{
+      items: Array<{
+        id: number;
+        executionId: string | null;
+        workflowId: string | null;
+        nodeId: string | null;
+        reason: string;
+        createdAt: string;
+      }>;
+    }>("/api/dlq"),
+  retryDlq: (id: number) =>
+    request<{ accepted: true; jobId: string; dlqId: number; workflowId: string }>(
+      `/api/dlq/${id}/retry`,
+      { method: "POST", body: JSON.stringify({}) },
+    ),
   metrics: () => request<WorkflowMetrics>("/api/metrics"),
 };

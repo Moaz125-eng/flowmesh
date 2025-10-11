@@ -5,6 +5,7 @@ import { ExecutionDetailPage } from "./pages/ExecutionDetail.js";
 import { MetricsPanel } from "./pages/Metrics.js";
 import { WorkflowEditor } from "./pages/WorkflowEditor.js";
 import { WorkflowHistoryPage } from "./pages/WorkflowHistory.js";
+import { DlqPanel } from "./pages/DlqPanel.js";
 
 export function App(): JSX.Element {
   return (
@@ -16,6 +17,7 @@ export function App(): JSX.Element {
           <Link to="/workflows/new">New</Link>
           <Link to="/executions">Executions</Link>
           <Link to="/metrics">Metrics</Link>
+          <Link to="/dlq">DLQ</Link>
         </nav>
       </header>
       <main className="content">
